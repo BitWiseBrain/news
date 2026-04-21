@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>techfeed // 2026-04-21 17:29 UTC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #000;
+  --bg1: #0a0a0a;
+  --bg2: #111;
+  --bg3: #1a1a1a;
+  --border: #222;
+  --border2: #333;
+  --text: #e8e8e8;
+  --text2: #888;
+  --text3: #555;
+  --accent: #e8ff00;
+  --accent2: #00ff9d;
+  --hn: #ff6600;
+  --arxiv: #b31b1b;
+  --lobsters: #ac130d;
+  --devto: #3b49df;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Space Grotesk', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* scanline overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,.012) 2px,
+    rgba(255,255,255,.012) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+header {
+  border-bottom: 1px solid var(--border);
+  padding: 2rem 2rem 1.5rem;
+  position: sticky;
+  top: 0;
+  background: rgba(0,0,0,.92);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-family: var(--mono);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+.logo span { color: var(--text3); }
+
+.meta {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--text3);
+  margin-left: auto;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 2rem;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--bg1);
+}
+
+.tab-btn {
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 400;
+  color: var(--text3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: .9rem 1.2rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-btn .count {
+  display: inline-block;
+  background: var(--bg3);
+  color: var(--text3);
+  border-radius: 2px;
+  font-size: .6rem;
+  padding: .05rem .3rem;
+  margin-left: .4rem;
+}
+
+.tab-btn.active .count {
+  background: var(--accent);
+  color: #000;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.tab-panel { display: none; }
+.tab-panel.active { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1px; }
+
+.card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  padding: 1.2rem 1.4rem;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+
+.card:hover {
+  border-color: var(--border2);
+  background: var(--bg2);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 2px; height: 0;
+  background: var(--accent);
+  transition: height .2s;
+}
+.card:hover::before { height: 100%; }
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: .7rem;
+}
+
+.badge {
+  font-family: var(--mono);
+  font-size: .65rem;
+  font-weight: 600;
+  padding: .15rem .45rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.HackerNews { background: #1a0d00; color: var(--hn); border: 1px solid #3d1f00; }
+.arXiv      { background: #1a0000; color: #ff6b6b;  border: 1px solid #3d0000; }
+.lobsters   { background: #1a0000; color: #ff4444;  border: 1px solid #3d0000; }
+.DEVto      { background: #00001a; color: #6b7cff;  border: 1px solid #00003d; }
+
+.score {
+  font-family: var(--mono);
+  font-size: .65rem;
+  color: var(--text3);
+  margin-left: auto;
+}
+
+.card h3 {
+  font-size: .92rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: .6rem;
+}
+
+.card h3 a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color .15s;
+}
+
+.card h3 a:hover { color: var(--accent); }
+
+.summary {
+  font-size: .8rem;
+  color: var(--text2);
+  line-height: 1.5;
+  font-family: var(--mono);
+  font-weight: 300;
+}
+
+#all-panel {
+  display: none;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1px;
+}
+#all-panel.active { display: grid; }
+
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--text3);
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  header { padding: 1rem; gap: 1rem; }
+  .tabs { padding: 0 1rem; }
+  main { padding: 1rem; }
+  .tab-panel.active, #all-panel.active { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">tech<span>/</span>feed</div>
+  <div class="meta">updated 2026-04-21 17:29 UTC &nbsp;·&nbsp; 15 articles</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-cat="ALL">All <span class="count">15</span></button>
+  <button class="tab-btn" data-cat="Compilers_n_PLs">Compilers &amp; PLs <span class="count">4</span></button>
+<button class="tab-btn" data-cat="Cloud_n_Infra">Cloud &amp; Infra <span class="count">3</span></button>
+<button class="tab-btn" data-cat="DevOps_n_MLOps">DevOps &amp; MLOps <span class="count">3</span></button>
+<button class="tab-btn" data-cat="Systems">Systems <span class="count">2</span></button>
+<button class="tab-btn" data-cat="AI_ML_Systems">AI/ML Systems <span class="count">3</span></button>
+
+</nav>
+
+<main>
+  <div id="all-panel" class="tab-panel active">
+    
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 834</span>
+  </div>
+  <h3><a href="https://llvm.org" target="_blank" rel="noopener">LLVM 18 Released: New Pass Manager Improvements</a></h3>
+  <p class="summary">LLVM 18 brings significant improvements to the new pass manager, better vectorization, and faster compile times across major targets.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">Polyhedral Compilation Techniques for Modern GPU Architectures</a></h3>
+  <p class="summary">We present novel polyhedral transformations that improve data locality and instruction-level parallelism for GPU workloads by 2.4x on average.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge lobsters">lobste.rs</span>
+    <span class='score'>▲ 210</span>
+  </div>
+  <h3><a href="https://lobste.rs" target="_blank" rel="noopener">Writing a Linker in Rust from Scratch</a></h3>
+  <p class="summary">A detailed walkthrough of implementing a functional ELF linker in Rust, covering symbol resolution, relocation, and section merging.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge DEVto">DEV.to</span>
+    <span class='score'>▲ 145</span>
+  </div>
+  <h3><a href="https://dev.to" target="_blank" rel="noopener">WebAssembly WASI 2.0: What Changes for Developers</a></h3>
+  <p class="summary">WASI 2.0 introduces a component model that fundamentally changes how Wasm modules interoperate, enabling proper interface types and capability-based security.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 621</span>
+  </div>
+  <h3><a href="https://kubernetes.io" target="_blank" rel="noopener">Kubernetes 1.30 Deprecates In-Tree Cloud Provider Code</a></h3>
+  <p class="summary">K8s 1.30 moves all cloud provider integrations out of the core codebase into external CCM plugins, reducing binary size and improving maintainability.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">Serverless Cold Start Latency: A Comprehensive Benchmark Study</a></h3>
+  <p class="summary">Across AWS Lambda, GCP Cloud Run, and Azure Functions we find median cold start latency of 180-420ms, with JVM workloads 3x slower than Go/Rust runtimes.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge DEVto">DEV.to</span>
+    <span class='score'>▲ 312</span>
+  </div>
+  <h3><a href="https://dev.to" target="_blank" rel="noopener">Terraform vs Pulumi in 2024: Which IaC Tool Should You Use?</a></h3>
+  <p class="summary">Pulumi wins on type safety and testability while Terraform has a wider ecosystem and better state management. The choice depends on your team language.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 498</span>
+  </div>
+  <h3><a href="https://dagger.io" target="_blank" rel="noopener">Dagger: Programmable CI/CD Pipelines in Go, Python, or TypeScript</a></h3>
+  <p class="summary">Dagger lets you define your CI pipeline as actual code, running identically on local dev and any CI provider using a portable container runtime.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge lobsters">lobste.rs</span>
+    <span class='score'>▲ 187</span>
+  </div>
+  <h3><a href="https://opentofu.org" target="_blank" rel="noopener">OpenTofu 1.7: State Encryption and Provider Mocking</a></h3>
+  <p class="summary">OpenTofu 1.7 adds native state encryption at rest, provider function support, and a mock provider for testing modules without real cloud calls.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">MLflow 3.0: Unified Experiment Tracking for LLM Fine-tuning</a></h3>
+  <p class="summary">MLflow 3.0 extends tracking to LLM workflows with prompt versioning, token-level cost tracking, and native integration with HuggingFace and LangChain.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 743</span>
+  </div>
+  <h3><a href="https://kernel.dk" target="_blank" rel="noopener">io_uring in 2024: Where Are We?</a></h3>
+  <p class="summary">A retrospective on io_uring adoption: most major databases now use it, with Postgres showing 40% throughput gains on NVMe workloads in benchmarks.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge lobsters">lobste.rs</span>
+    <span class='score'>▲ 289</span>
+  </div>
+  <h3><a href="https://lwn.net" target="_blank" rel="noopener">Memory Safety in the Linux Kernel: Rust Drivers Update</a></h3>
+  <p class="summary">The Linux kernel now has 28 drivers written in Rust, with the networking subsystem expected to receive Rust abstractions in 6.10.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">FlashAttention-3: Fast and Accurate Attention on H100 GPUs</a></h3>
+  <p class="summary">FlashAttention-3 exploits H100 async execution and FP8 to achieve 1.5-2.0x speedup over FA2, hitting 740 TFLOPs/s on attention-heavy transformer workloads.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 567</span>
+  </div>
+  <h3><a href="https://vllm.ai" target="_blank" rel="noopener">vLLM 0.4: PagedAttention Gets Prefix Caching</a></h3>
+  <p class="summary">vLLM 0.4 adds automatic prefix caching that reuses KV cache across requests sharing a common prompt prefix, cutting TTFT by up to 75% for RAG workloads.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge DEVto">DEV.to</span>
+    <span class='score'>▲ 234</span>
+  </div>
+  <h3><a href="https://dev.to" target="_blank" rel="noopener">Building a RAG Pipeline with Rust and Qdrant</a></h3>
+  <p class="summary">A practical guide to implementing retrieval-augmented generation in Rust using the Qdrant vector database, covering chunking, embedding, and query expansion.</p>
+</article>
+  </div>
+  <section class="tab-panel" id="panel_Compilers_n_PLs">
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 834</span>
+  </div>
+  <h3><a href="https://llvm.org" target="_blank" rel="noopener">LLVM 18 Released: New Pass Manager Improvements</a></h3>
+  <p class="summary">LLVM 18 brings significant improvements to the new pass manager, better vectorization, and faster compile times across major targets.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">Polyhedral Compilation Techniques for Modern GPU Architectures</a></h3>
+  <p class="summary">We present novel polyhedral transformations that improve data locality and instruction-level parallelism for GPU workloads by 2.4x on average.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge lobsters">lobste.rs</span>
+    <span class='score'>▲ 210</span>
+  </div>
+  <h3><a href="https://lobste.rs" target="_blank" rel="noopener">Writing a Linker in Rust from Scratch</a></h3>
+  <p class="summary">A detailed walkthrough of implementing a functional ELF linker in Rust, covering symbol resolution, relocation, and section merging.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge DEVto">DEV.to</span>
+    <span class='score'>▲ 145</span>
+  </div>
+  <h3><a href="https://dev.to" target="_blank" rel="noopener">WebAssembly WASI 2.0: What Changes for Developers</a></h3>
+  <p class="summary">WASI 2.0 introduces a component model that fundamentally changes how Wasm modules interoperate, enabling proper interface types and capability-based security.</p>
+</article></section>
+<section class="tab-panel" id="panel_Cloud_n_Infra">
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 621</span>
+  </div>
+  <h3><a href="https://kubernetes.io" target="_blank" rel="noopener">Kubernetes 1.30 Deprecates In-Tree Cloud Provider Code</a></h3>
+  <p class="summary">K8s 1.30 moves all cloud provider integrations out of the core codebase into external CCM plugins, reducing binary size and improving maintainability.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">Serverless Cold Start Latency: A Comprehensive Benchmark Study</a></h3>
+  <p class="summary">Across AWS Lambda, GCP Cloud Run, and Azure Functions we find median cold start latency of 180-420ms, with JVM workloads 3x slower than Go/Rust runtimes.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge DEVto">DEV.to</span>
+    <span class='score'>▲ 312</span>
+  </div>
+  <h3><a href="https://dev.to" target="_blank" rel="noopener">Terraform vs Pulumi in 2024: Which IaC Tool Should You Use?</a></h3>
+  <p class="summary">Pulumi wins on type safety and testability while Terraform has a wider ecosystem and better state management. The choice depends on your team language.</p>
+</article></section>
+<section class="tab-panel" id="panel_DevOps_n_MLOps">
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 498</span>
+  </div>
+  <h3><a href="https://dagger.io" target="_blank" rel="noopener">Dagger: Programmable CI/CD Pipelines in Go, Python, or TypeScript</a></h3>
+  <p class="summary">Dagger lets you define your CI pipeline as actual code, running identically on local dev and any CI provider using a portable container runtime.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge lobsters">lobste.rs</span>
+    <span class='score'>▲ 187</span>
+  </div>
+  <h3><a href="https://opentofu.org" target="_blank" rel="noopener">OpenTofu 1.7: State Encryption and Provider Mocking</a></h3>
+  <p class="summary">OpenTofu 1.7 adds native state encryption at rest, provider function support, and a mock provider for testing modules without real cloud calls.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">MLflow 3.0: Unified Experiment Tracking for LLM Fine-tuning</a></h3>
+  <p class="summary">MLflow 3.0 extends tracking to LLM workflows with prompt versioning, token-level cost tracking, and native integration with HuggingFace and LangChain.</p>
+</article></section>
+<section class="tab-panel" id="panel_Systems">
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 743</span>
+  </div>
+  <h3><a href="https://kernel.dk" target="_blank" rel="noopener">io_uring in 2024: Where Are We?</a></h3>
+  <p class="summary">A retrospective on io_uring adoption: most major databases now use it, with Postgres showing 40% throughput gains on NVMe workloads in benchmarks.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge lobsters">lobste.rs</span>
+    <span class='score'>▲ 289</span>
+  </div>
+  <h3><a href="https://lwn.net" target="_blank" rel="noopener">Memory Safety in the Linux Kernel: Rust Drivers Update</a></h3>
+  <p class="summary">The Linux kernel now has 28 drivers written in Rust, with the networking subsystem expected to receive Rust abstractions in 6.10.</p>
+</article></section>
+<section class="tab-panel" id="panel_AI_ML_Systems">
+<article class="card">
+  <div class="card-meta">
+    <span class="badge arXiv">arXiv</span>
+    
+  </div>
+  <h3><a href="https://arxiv.org" target="_blank" rel="noopener">FlashAttention-3: Fast and Accurate Attention on H100 GPUs</a></h3>
+  <p class="summary">FlashAttention-3 exploits H100 async execution and FP8 to achieve 1.5-2.0x speedup over FA2, hitting 740 TFLOPs/s on attention-heavy transformer workloads.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge HackerNews">HackerNews</span>
+    <span class='score'>▲ 567</span>
+  </div>
+  <h3><a href="https://vllm.ai" target="_blank" rel="noopener">vLLM 0.4: PagedAttention Gets Prefix Caching</a></h3>
+  <p class="summary">vLLM 0.4 adds automatic prefix caching that reuses KV cache across requests sharing a common prompt prefix, cutting TTFT by up to 75% for RAG workloads.</p>
+</article>
+<article class="card">
+  <div class="card-meta">
+    <span class="badge DEVto">DEV.to</span>
+    <span class='score'>▲ 234</span>
+  </div>
+  <h3><a href="https://dev.to" target="_blank" rel="noopener">Building a RAG Pipeline with Rust and Qdrant</a></h3>
+  <p class="summary">A practical guide to implementing retrieval-augmented generation in Rust using the Qdrant vector database, covering chunking, embedding, and query expansion.</p>
+</article></section>
+
+</main>
+
+<footer>techfeed — auto-generated · sources: hackernews · arxiv · lobste.rs · dev.to</footer>
+
+<script>
+const btns = document.querySelectorAll('.tab-btn');
+const allPanel = document.getElementById('all-panel');
+const panels = document.querySelectorAll('.tab-panel[id^="panel_"]');
+
+btns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    btns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    if (cat === 'ALL') {
+      allPanel.classList.add('active');
+      panels.forEach(p => p.classList.remove('active'));
+    } else {
+      allPanel.classList.remove('active');
+      panels.forEach(p => {
+        p.classList.toggle('active', p.id === 'panel_' + cat);
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>
