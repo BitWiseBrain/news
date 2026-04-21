@@ -1,0 +1,26 @@
+name: Scrape & Build
+on:
+  schedule:
+    - cron: '0 */6 * * *' 
+  workflow_dispatch:      
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write     
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Run Scraper
+        run: python scrape_and_build.py
+      - name: Commit and Push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add index.html
+          git commit -m "Auto-update techfeed" || exit 0
+          git push
